@@ -4,28 +4,35 @@ namespace Mas7\Transcriptions;
 
 class Transcription
 {
-    protected array $lines;
+    public function __construct(protected array $lines)
+    {
+        $this->lines = $this->discardInvalidLines(array_map('trim', $lines));
+    }
 
     public static function load(string $path): self
     {
-        $instance = new static();
-
-        $instance->lines = $instance->discardIrrelevantLines(file($path));
-
-        return $instance;
+        return new static(file($path));
     }
 
     public function lines(): array
     {
-        return $this->lines;
+        $lines = [];
+
+        foreach (range(0, count($this->lines) - 1, 2) as $i) {
+            $lines[] = new Line(timestamp: $this->lines[$i], body: $this->lines[$i+1]);
+        }
+
+        return $lines;
     }
 
-    protected function discardIrrelevantLines(array $lines): array
+    protected function discardInvalidLines(array $lines): array
     {
-        return array_values(array_filter(
-            array_map('trim', $lines),
-            fn ($line) => $line !== 'WEBVTT' && $line !== '' && !is_numeric($line)
-        ));
+        return array_values(
+            array_filter(
+                $lines,
+                fn ($line) => Line::valid($line)
+            )
+        );
     }
 
     public function __toString(): string
