@@ -19,7 +19,7 @@ class Transcription
         $lines = [];
 
         foreach (range(0, count($this->lines) - 1, 2) as $i) {
-            $lines[] = new Line(timestamp: $this->lines[$i], body: $this->lines[$i+1]);
+            $lines[] = new Line(timestamp: $this->lines[$i], body: $this->lines[$i + 1]);
         }
 
         return $lines;
@@ -30,13 +30,20 @@ class Transcription
         return array_values(
             array_filter(
                 $lines,
-                fn ($line) => Line::valid($line)
+                fn($line) => Line::valid($line)
             )
         );
     }
 
+    public function htmlLines()
+    {
+        $htmlLines = array_map(fn (Line $line) => $line->toAnchorTag(), $this->lines());
+
+        return implode("\n", $htmlLines);
+    }
+
     public function __toString(): string
     {
-        return implode("", $this->lines);
+        return implode("\n", $this->lines);
     }
 }
