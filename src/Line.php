@@ -4,13 +4,8 @@ namespace Mas7\Transcriptions;
 
 class Line
 {
-    public function __construct(public string $timestamp, public string $body)
+    public function __construct(public int $position, public string $timestamp, public string $body)
     {
-    }
-
-    public static function valid(string $line): bool
-    {
-        return $line !== 'WEBVTT' && $line !== '' && !is_numeric($line);
     }
 
     public function toAnchorTag()

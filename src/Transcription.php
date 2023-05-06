@@ -6,7 +6,7 @@ class Transcription
 {
     public function __construct(protected array $lines)
     {
-        $this->lines = $this->discardInvalidLines(array_map('trim', $lines));
+        $this->lines = $this->discardInvalidLines($lines);
     }
 
     public static function load(string $path): self
@@ -16,28 +16,20 @@ class Transcription
 
     public function lines(): array
     {
-        $lines = [];
-
-        foreach (range(0, count($this->lines) - 1, 2) as $i) {
-            $lines[] = new Line(timestamp: $this->lines[$i], body: $this->lines[$i + 1]);
-        }
-
-        return $lines;
+        return array_map(
+            fn($line) => new Line(...$line),
+            array_chunk($this->lines, 3)
+        );
     }
 
     protected function discardInvalidLines(array $lines): array
     {
-        return array_values(
-            array_filter(
-                $lines,
-                fn($line) => Line::valid($line)
-            )
-        );
+        return array_slice(array_filter(array_map('trim', $lines)), 1);
     }
 
     public function htmlLines()
     {
-        $htmlLines = array_map(fn (Line $line) => $line->toAnchorTag(), $this->lines());
+        $htmlLines = array_map(fn(Line $line) => $line->toAnchorTag(), $this->lines());
 
         return implode("\n", $htmlLines);
     }
